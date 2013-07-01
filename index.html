@@ -1,0 +1,49 @@
+<html>
+<head>
+	<link rel="stylesheet" href="css/player.css"/>
+	<link href='http://fonts.googleapis.com/css?family=Lato:100,100italic,900' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" />
+	<!-- <link rel="stylesheet" href="lib/jquery-ui.css" /> -->
+
+	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+	
+	<!-- <script type="text/javascript" src="js/jquery.min.js"></script> -->
+	<!-- <script src="js/jquery-ui.js"></script> -->
+
+	<script type="text/javascript" src="lib/popcorn.min.js"></script>
+	<script type="text/javascript" src="lib/raphael-min.js"></script>
+
+	<script type="text/javascript" src="lib/async.js"></script>
+	<script type="text/javascript" src="js/functions.js"></script>
+	<script type="text/javascript" src="js/Raphaelitems.js"></script>
+	<script type="text/javascript" src="js/player.js"></script>
+	<script type="text/javascript" src="js/layer.js"></script>
+	<script type="text/javascript" src="js/script.js"></script>
+
+</head>
+<body>
+	<div id="player">
+		<audio height="0" width="0" id="myAudio">
+			<source src="Pepsi_spec_music.mp3" type="audio/mpeg">
+		</audio>
+		<div id="player-screen">
+			
+		</div>
+		<div id="player-controls">
+			<div id="play-pause">
+				<div id="playButton"></div>
+				<div id="pauseButton"></div>
+			</div>
+			<div id="progress-bar">
+				<div id="progress-buffer"></div>
+				<div id="progress-cursor"></div>
+			</div>
+			<div id="player-fullscreen"></div>
+			<div id="player-volume"></div>
+			<div id="player-timecode">00:00</div>
+		</div>
+	</div>
+
+</body>
+</html>
