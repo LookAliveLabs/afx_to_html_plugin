@@ -16,6 +16,10 @@ function Layer(layer, paper){
 			
 			// pull out the initial keyframes for each attribute
 			var attr = {};
+			// if no transform -> set default transform
+			if(!attr['transform']){
+				attr['transform'] = [1,1,0,0,0,0,0,0,0];
+			}
 			var varyingAttrs = []; // will contain an array of all varying attributes
 			for (key in el){
 				if(typeof el[key] == 'object' && Object.prototype.toString.call(el[key][0])=="[object Object]"){
@@ -25,6 +29,8 @@ function Layer(layer, paper){
 						attr[key] = this.pathToString(el[key][0].val);
 					}else if(key=='fill'|| key=='stroke'){
 						attr[key] = this.fillToString(el[key][0].val);
+					}else if(key=='text'){
+						attr[key] = el[key][0].val.replace(/%n%/g, '\n');
 					}else{
 						attr[key] = el[key][0].val;
 					}
@@ -38,16 +44,13 @@ function Layer(layer, paper){
 						attr[key] = this.pathToString(el[key]);
 					}else if(key=='fill'||key=='stroke'){
 						attr[key] = this.fillToString(el[key]);
+					}else if(key=='text'){
+						attr[key] = el[key].replace(/%n%/g, '\n');
 					}else{
 						attr[key] = el[key];
 					}
 				}
 			}
-
-			if(this.layer.name=='Wave'){
-				console.log('wave');
-			}
-			
 
 			var shape = paper.add([attr]).attr(attr); // force attr again, to set correct center for rectangles
 			// shape is a local variable representing this shape. It will store somevariables specific to this shape
@@ -69,6 +72,17 @@ function Layer(layer, paper){
 			shape.myVaryingAttrs = varyingAttrs;
 			// shape.fullAttr = hoverObj.el[e];
 			shape.initAttrs = attr;
+
+			if(layer.type='text'){
+				$('tspan', shape.node).attr('dy', attr['font-size']*1.12); // line height = 112% of text height
+				$($('tspan', shape.node)[0]).attr('dy', 0);
+			}
+
+			// set initial transform
+			var scale_transform = App.fullscreen ? App.globalTransform_fs : App.globalTransform;
+			var yTranslate= App.fullscreen ? 'T0,'+(screen.height - (screen.width*9/16))/2 : ''; // mantain a 16:9 ration of width:height
+			var layer_tf = (typeof this.layer.transform == 'object') ? this.layer.transform[0].val : this.layer.transform;
+			shape.attr({'transform': "..."+layer_tf+scale_transform+yTranslate});
 
 			// add this shape to the set
 			this.shapes.push(shape);
@@ -257,6 +271,13 @@ function Layer(layer, paper){
 					var strokeWidth = shape.attr('stroke-width');
 				    shape.attr({'transform': "..."+layer_tf+scale_transform+yTranslate});
 				    $(shape.node).css({'stroke-width': strokeWidth }); // force stroke width. Raphael js has a bug -> stroke width resets during scale
+				   	
+				   	// adjust text
+				    if(self.layer.type='text'){
+						$('tspan', shape.node).attr('dy', shape.attr('font-size')*1.12); // line height = 112% of text height
+						$($('tspan', shape.node)[0]).attr('dy', 0);
+					}
+
 				    // make shape visible
 				    $(shape.node).css({display: 'block'});
 				});
