@@ -10,8 +10,60 @@ function Layer(layer, paper){
 	------------------------*/
 		// (1) Create raphael set of elements - reverse order to mimic order in After effects
 		this.shapes = paper.set(); // set containing all the shapes in this layer
+
+		
+		// if layer has a mask - init mask
+		if(layer.mask && layer.mask.length>0){
+			this.maskPath = this.pathToString(layer.mask[0].path);
+			// console.log(this.maskPath);
+			// this.mask = new Mask(layer);
+			// this.shapes.push(this.mask);
+			// this.shapes.push(this.mask);
+		}
+
+		switch (layer.name.split('_')[0]){
+			case "Tweet":
+				var idx = parseInt(layer.name.split('_')[1])-1;
+				switch(layer.name.split('_')[2]){
+					case "Picture":
+						var el =layer.contents[0];
+						el.type='image';
+						el.src = App.twitter[idx]['user_image'];
+						el.y = el.y - 10;
+						break;
+					case "Date":
+						var date = new Date(App.twitter[idx]['date']);
+						layer.contents[0].text = date.getDate() + ' ' +App.months[date.getMonth()+1]; 
+						break;
+					case "Tweet":
+						layer.contents[0].text = App.twitter[idx]['text'];
+						break;
+					case "Handle":
+						layer.contents[0].text = App.twitter[idx]['screen_name'];
+						break;
+					case "Name":
+						layer.contents[0].text = App.twitter[idx]['user_name'];
+						break;
+				}
+				break;
+			case "Facebook":
+				var idx = parseInt(layer.name.split('_')[2])-1;
+				switch(layer.name.split('_')[1]){
+					case "Icon":
+						layer.contents[0].src = unescape(App.facebook.picture);
+						break;
+					case "Status":
+						layer.contents[0].text = App.facebook.data[idx].message;
+						break;
+					case "Photo":
+						layer.contents[0].src = unescape(App.facebook.data[idx].picture);
+						break;
+				}
+				break;
+		}
+
 		for (var e=layer.contents.length-1; e>=0; e--){
-			
+
 			var el = layer.contents[e]; // info for this element
 			
 			// pull out the initial keyframes for each attribute
@@ -20,6 +72,22 @@ function Layer(layer, paper){
 			if(!attr['transform']){
 				attr['transform'] = [1,1,0,0,0,0,0,0,0];
 			}
+			// if this is an image -> replace src
+			if(el['type'] == 'image' && layer['name'].split('_')[0]=="InstagramPhoto"){
+				var idx = parseFloat(el['name'].split('_')[1]);
+				el['src'] = App.instagram[idx]['href'];
+			}
+			if(layer.mask && layer.mask.length>0){
+				el['clip-rect'] = this.maskPath;
+			}
+			if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramText"){
+				var idx = parseFloat(layer['name'].split('_')[1]);
+				el['text'] = App.instagram[idx]['caption'].toUpperCase();
+			}else if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramUser"){
+				var idx = parseFloat(layer['name'].split('_')[1]);
+				el['text'] = 'USER'+App.instagram[idx]['user_id'];
+			}
+			
 			var varyingAttrs = []; // will contain an array of all varying attributes
 			for (key in el){
 				if(typeof el[key] == 'object' && Object.prototype.toString.call(el[key][0])=="[object Object]"){
@@ -53,15 +121,17 @@ function Layer(layer, paper){
 			}
 
 			var shape = paper.add([attr]).attr(attr); // force attr again, to set correct center for rectangles
+
 			// shape is a local variable representing this shape. It will store somevariables specific to this shape
 			shape = shape[0];
 
-			// shape.attr({'stroke-width':shape.attr('stroke-width')*(App.width/App.paper.svgWidth)});
-
-			if (layer.name=='Instagram Icon 01'){
-				console.log('instagram');
+			if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramText"){
+				shape.fitText(400);
 			}
+			// $(shape.node).css("mask", "url(#"+layer.name.replace(/ /g, '')+")");
+			// $(shape.node).css("mask", "url(#masking)");
 
+			// shape.attr({'stroke-width':shape.attr('stroke-width')*(App.width/App.paper.svgWidth)});
 			
 			// (h2) define transforms and variables for each - will be used when animating hover layers. use LAST keyframes for this
 			shape.myStrokeWidth = (typeof el['stroke-width'] =='object') ? el['stroke-width'][ el['stroke-width'].length-1].val : el['stroke-width'];
@@ -73,9 +143,25 @@ function Layer(layer, paper){
 			// shape.fullAttr = hoverObj.el[e];
 			shape.initAttrs = attr;
 
-			if(layer.type='text'){
+			if(el.type='text'){
 				$('tspan', shape.node).attr('dy', attr['font-size']*1.12); // line height = 112% of text height
 				$($('tspan', shape.node)[0]).attr('dy', 0);
+
+				// download google font, if not already downloaded
+				if(el['font-family']){
+					var fontname = (el['font-family']).replace(/ /g, '+') + ':' + el['font-weight'] + el['font-style'];
+					if(!App.fonts[fontname]){
+						var wf = document.createElement('link');
+				        wf.href = ('https:' == document.location.protocol ? 'https' : 'http') +
+				            '://fonts.googleapis.com/css?family=' + fontname;
+				        wf.type = 'rel/stylesheet';
+				        wf.async = 'true';
+				        var s = document.getElementsByTagName('link')[0];
+				        s.parentNode.insertBefore(wf, s);
+
+				        App.fonts[fontname] = true;
+				    }
+				}
 			}
 
 			// set initial transform
@@ -86,6 +172,7 @@ function Layer(layer, paper){
 
 			// add this shape to the set
 			this.shapes.push(shape);
+
 
 		}
 		
@@ -217,8 +304,10 @@ function Layer(layer, paper){
 	--------------------------------------------- */
 	this.pathToString = function(path){
 		var str = path.slice();
-		str = 'M' + str.join('C') + 'Z';
-		return str;
+		// str = 'M' + str.join('C') + 'Z';
+		str = str.join('C') + 'Z';
+		return str.replace(',', '');
+		// return str;
 	},
 	/*---------------------------------------------- 
 		fillToString: fill is a 1D array of [r,g,b,a] values
@@ -265,17 +354,20 @@ function Layer(layer, paper){
 					callback(null);
 				}, function(err){
 					// add additional transforms
-					if(self.layer.name=='Instagram Icon 01'){
-						console.log('instagram');
-					}
 					var strokeWidth = shape.attr('stroke-width');
 				    shape.attr({'transform': "..."+layer_tf+scale_transform+yTranslate});
 				    $(shape.node).css({'stroke-width': strokeWidth }); // force stroke width. Raphael js has a bug -> stroke width resets during scale
 				   	
+				    if(shape.clip) shape.clip.setAttribute('transform', '');
+
 				   	// adjust text
 				    if(self.layer.type='text'){
 						$('tspan', shape.node).attr('dy', shape.attr('font-size')*1.12); // line height = 112% of text height
 						$($('tspan', shape.node)[0]).attr('dy', 0);
+
+						if(self.layer['name'].split('_')[0]=="InstagramText"){
+							shape.fitText(400);
+						}
 					}
 
 				    // make shape visible

@@ -68,3 +68,18 @@ function intrapolateArrays(A1, A2, fraction){
 	var fract = diff.multArray(fraction);
 	return A1.addArray(fract,1)
 }
+
+function multiplyMatrix(m2, m1) {
+    var result = [];
+    for(var j = 0; j < m2.length; j++) {
+        result[j] = [];
+        for(var k = 0; k < m1[0].length; k++) {
+            var sum = 0;
+            for(var i = 0; i < m1.length; i++) {
+                sum += m1[i][k] * m2[j][i];
+            }
+            result[j].push(sum);
+        }
+    }
+    return result;
+}
