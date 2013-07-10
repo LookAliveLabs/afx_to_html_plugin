@@ -70,7 +70,7 @@
 	    	$data = array();
 	    	$data['text'] = $status->text;
 			$data['user_name'] = $status->user->name;
-			$data['screen_name'] = $status->user->screen_name;
+			$data['screen_name'] = '@'.$status->user->screen_name;
 			$data['user_image'] = $status->user->profile_image_url;
 			$data['date'] = $status->created_at;
 	    	
@@ -80,7 +80,7 @@
 	}
 
 	function getInstagram(){
-		$feed_url =  'https://api.instagram.com/v1/tags/pepsi/media/recent?access_token=252755417.c773902.24b8e27339234b308629082a7f71228a';
+		$feed_url =  'https://api.instagram.com/v1/tags/pepsi/media/recent?access_token=252755417.c773902.24b8e27339234b308629082a7f71228a&count=100';
 		// $feed_url =  'https://api.instagram.com/v1/tags/search?q=pepsi&access_token=252755417.f59def8.2529f163ba8948638cdd67b1bb0f3353';
 
 		$json = file_get_contents($feed_url);
@@ -92,9 +92,9 @@
 	    	$data = array();
 	    	$data['href'] = $entry['images']['low_resolution']['url'];
 			$data['user'] = 'user'.$entry['user']['id'];
-			$data['caption'] = $entry['caption']['text'];
-			$data['user_id'] = $entry['caption']['from']['id'];
-			$data['user_name'] = $entry['caption']['from']['username'];
+			$data['caption'] = $entry['caption']['text'] ? $entry['caption']['text'] : '';
+			$data['user_id'] = $entry['caption']['from']['id'] ? $entry['caption']['from']['id']: '';
+			$data['user_name'] = $entry['caption']['from']['username'] ? $entry['caption']['from']['username'] : '';
 
 	    	
 	    	array_push($out, $data);

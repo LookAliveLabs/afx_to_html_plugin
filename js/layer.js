@@ -125,13 +125,9 @@ function Layer(layer, paper){
 			// shape is a local variable representing this shape. It will store somevariables specific to this shape
 			shape = shape[0];
 
-			if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramText"){
-				shape.fitText(400);
-			}
-			// $(shape.node).css("mask", "url(#"+layer.name.replace(/ /g, '')+")");
-			// $(shape.node).css("mask", "url(#masking)");
-
-			// shape.attr({'stroke-width':shape.attr('stroke-width')*(App.width/App.paper.svgWidth)});
+			// if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramText"){
+			// 	shape.fitText(400);
+			// }
 			
 			// (h2) define transforms and variables for each - will be used when animating hover layers. use LAST keyframes for this
 			shape.myStrokeWidth = (typeof el['stroke-width'] =='object') ? el['stroke-width'][ el['stroke-width'].length-1].val : el['stroke-width'];
@@ -143,7 +139,16 @@ function Layer(layer, paper){
 			// shape.fullAttr = hoverObj.el[e];
 			shape.initAttrs = attr;
 
-			if(el.type='text'){
+			if(el.type=='text'){
+				// fit into bbox
+				shape.bbox = {
+					width:el.bbox.width*App.width/App.paper.svgWidth,
+					height:el.bbox.height*App.height/App.paper.svgHeight
+				}
+				shape.numLines =$('tspan', shape.node).length;
+
+				textWrap(shape); // wrap text into bbox
+
 				$('tspan', shape.node).attr('dy', attr['font-size']*1.12); // line height = 112% of text height
 				$($('tspan', shape.node)[0]).attr('dy', 0);
 
@@ -162,6 +167,7 @@ function Layer(layer, paper){
 				        App.fonts[fontname] = true;
 				    }
 				}
+
 			}
 
 			// set initial transform
@@ -361,13 +367,16 @@ function Layer(layer, paper){
 				    if(shape.clip) shape.clip.setAttribute('transform', '');
 
 				   	// adjust text
-				    if(self.layer.type='text'){
+				    if(self.layer.type=='text'){
+
+						// if(self.layer['name'].split('_')[0]=="InstagramText"){
+						// 	shape.fitText(400);
+						// }else{
+							textWrap(shape);
+						// }
 						$('tspan', shape.node).attr('dy', shape.attr('font-size')*1.12); // line height = 112% of text height
 						$($('tspan', shape.node)[0]).attr('dy', 0);
 
-						if(self.layer['name'].split('_')[0]=="InstagramText"){
-							shape.fitText(400);
-						}
 					}
 
 				    // make shape visible

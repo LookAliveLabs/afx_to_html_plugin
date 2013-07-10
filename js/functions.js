@@ -69,17 +69,42 @@ function intrapolateArrays(A1, A2, fraction){
 	return A1.addArray(fract,1)
 }
 
-function multiplyMatrix(m2, m1) {
-    var result = [];
-    for(var j = 0; j < m2.length; j++) {
-        result[j] = [];
-        for(var k = 0; k < m1[0].length; k++) {
-            var sum = 0;
-            for(var i = 0; i < m1.length; i++) {
-                sum += m1[i][k] * m2[j][i];
-            }
-            result[j].push(sum);
+function textWrap(t) {
+    var content = t.attr("text");
+    var abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    t.attr({
+      'text-anchor' : 'start',
+      "text" : abc
+    });
+    var letterWidth = t.getBBox().width / abc.length;
+    var letterHeight = t.getBBox().height;
+    t.attr({
+        "text" : content
+    });
+
+    var words = content.split(" ");
+    var x = 0, s = [words[0]];
+    // y=letterHeight > height ? height: letterHeight;
+    y = 1;
+
+    for ( var i = 1; i < words.length; i++) {
+
+        var l = words[i].length;
+        if (x + (l * letterWidth) > t.bbox.width) {
+        	// check height
+        	if(y+1 > t.numLines){
+        		s.push('...');
+        		break;
+        	}else{
+	            s.push("\n");
+	            x = 0;
+	            y += letterHeight;
+	        }
         }
+        x += l * letterWidth;
+        s.push(words[i] + " ");
     }
-    return result;
+    t.attr({
+        "text" : s.join("")
+    });
 }
