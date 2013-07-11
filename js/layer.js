@@ -24,6 +24,7 @@ function Layer(layer, paper){
 		switch (layer.name.split('_')[0]){
 			case "Tweet":
 				var idx = parseInt(layer.name.split('_')[1])-1;
+				layer.link = App.twitter[idx].link;
 				switch(layer.name.split('_')[2]){
 					case "Picture":
 						var el =layer.contents[0];
@@ -33,7 +34,7 @@ function Layer(layer, paper){
 						break;
 					case "Date":
 						var date = new Date(App.twitter[idx]['date']);
-						layer.contents[0].text = date.getDate() + ' ' +App.months[date.getMonth()+1]; 
+						layer.contents[0].text = date.getDate() + ' ' +App.months[date.getMonth()]; 
 						break;
 					case "Tweet":
 						layer.contents[0].text = App.twitter[idx]['text'];
@@ -43,6 +44,21 @@ function Layer(layer, paper){
 						break;
 					case "Name":
 						layer.contents[0].text = App.twitter[idx]['user_name'];
+						break;
+				}
+				break;
+			case 'Instagram':
+				var idx = parseInt(layer.name.split('_')[2])-1;
+				layer.link = App.instagram[idx].link;
+				switch(layer.name.split('_')[1]){
+					case "Photo":
+						layer.contents[0].src = App.instagram[idx]['href'];
+						break;
+					case "User":
+						layer.contents[0].text = App.instagram[idx]['user_name'];
+						break;	
+					case "Text":
+						layer.contents[0].text = App.instagram[idx]['caption'].toUpperCase();
 						break;
 				}
 				break;
@@ -72,20 +88,9 @@ function Layer(layer, paper){
 			if(!attr['transform']){
 				attr['transform'] = [1,1,0,0,0,0,0,0,0];
 			}
-			// if this is an image -> replace src
-			if(el['type'] == 'image' && layer['name'].split('_')[0]=="InstagramPhoto"){
-				var idx = parseFloat(el['name'].split('_')[1]);
-				el['src'] = App.instagram[idx]['href'];
-			}
+
 			if(layer.mask && layer.mask.length>0){
 				el['clip-rect'] = this.maskPath;
-			}
-			if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramText"){
-				var idx = parseFloat(layer['name'].split('_')[1]);
-				el['text'] = App.instagram[idx]['caption'].toUpperCase();
-			}else if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramUser"){
-				var idx = parseFloat(layer['name'].split('_')[1]);
-				el['text'] = 'USER'+App.instagram[idx]['user_id'];
 			}
 			
 			var varyingAttrs = []; // will contain an array of all varying attributes
@@ -123,12 +128,7 @@ function Layer(layer, paper){
 			var shape = paper.add([attr]).attr(attr); // force attr again, to set correct center for rectangles
 
 			// shape is a local variable representing this shape. It will store somevariables specific to this shape
-			shape = shape[0];
-
-			// if(el['type']=='text' && layer['name'].split('_')[0]=="InstagramText"){
-			// 	shape.fitText(400);
-			// }
-			
+			shape = shape[0];			
 			// (h2) define transforms and variables for each - will be used when animating hover layers. use LAST keyframes for this
 			shape.myStrokeWidth = (typeof el['stroke-width'] =='object') ? el['stroke-width'][ el['stroke-width'].length-1].val : el['stroke-width'];
 			shape.myTransform = (typeof el['transform'] =='object') ? el['transform'][ el['transform'].length-1].val : el['transform'];
@@ -138,6 +138,20 @@ function Layer(layer, paper){
 			shape.myVaryingAttrs = varyingAttrs;
 			// shape.fullAttr = hoverObj.el[e];
 			shape.initAttrs = attr;
+
+			/*
+				If this is a clickable link -> create a link
+			*/
+			if (layer.link){
+				$(shape.node).css('cursor','pointer'
+					// on click -> open new page
+				).click(function(){
+					var a = document.createElement('a');
+					$(a).attr({href: layer.link});
+					window.open($(a).attr('href'));
+					$(a).remove();
+				});
+			}
 
 			if(el.type=='text'){
 				// fit into bbox

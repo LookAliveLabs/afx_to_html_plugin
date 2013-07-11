@@ -71,7 +71,8 @@ function intrapolateArrays(A1, A2, fraction){
 
 function textWrap(t) {
     var content = t.attr("text");
-    var abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // var abc = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     t.attr({
       'text-anchor' : 'start',
       "text" : abc
@@ -82,17 +83,25 @@ function textWrap(t) {
         "text" : content
     });
 
+    // instagram text:
+    if(content.length>5 && content.indexOf(' ')==-1){
+    	content = content.replace(/#/g, ' #');
+    }
     var words = content.split(" ");
-    var x = 0, s = [words[0]];
-    // y=letterHeight > height ? height: letterHeight;
-    y = 1;
+
+    var s = [words[0]];
+    var x = words[0].length*letterWidth;
+    y=letterHeight > t.bbox.height ? t.bbox.height: letterHeight;
+    // y = 1;
+
+    var height = Math.ceil(t.bbox.height/letterHeight)*letterHeight;
 
     for ( var i = 1; i < words.length; i++) {
 
         var l = words[i].length;
         if (x + (l * letterWidth) > t.bbox.width) {
         	// check height
-        	if(y+1 > t.numLines){
+        	if(y+letterHeight > height){
         		s.push('...');
         		break;
         	}else{

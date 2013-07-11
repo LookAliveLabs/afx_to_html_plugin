@@ -73,6 +73,7 @@
 			$data['screen_name'] = '@'.$status->user->screen_name;
 			$data['user_image'] = $status->user->profile_image_url;
 			$data['date'] = $status->created_at;
+			$data['link'] = 'https://twitter.com/'.$status->user->name.'/status/'.$status->id;
 	    	
 	    	array_push($out, $data);
 	    }
@@ -95,6 +96,7 @@
 			$data['caption'] = $entry['caption']['text'] ? $entry['caption']['text'] : '';
 			$data['user_id'] = $entry['caption']['from']['id'] ? $entry['caption']['from']['id']: '';
 			$data['user_name'] = $entry['caption']['from']['username'] ? $entry['caption']['from']['username'] : '';
+			$data['link'] = $entry['link'];
 
 	    	
 	    	array_push($out, $data);
